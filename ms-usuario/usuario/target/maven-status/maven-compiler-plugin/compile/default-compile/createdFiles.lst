@@ -1,0 +1,8 @@
+com\prueba\usuario\Service\UsuarioService.class
+com\prueba\usuario\Model\Usuario.class
+com\prueba\usuario\Model\DTO\PedidoDTO.class
+com\prueba\usuario\Controller\UsuarioController.class
+com\prueba\usuario\Client\PedidoFeignCliente.class
+com\prueba\usuario\UsuarioApplication.class
+com\prueba\usuario\Model\Direcciones.class
+com\prueba\usuario\Repository\UsuarioRepository.class

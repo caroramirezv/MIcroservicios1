@@ -21,7 +21,7 @@ public class Ropa {
     @Column(nullable = false)
     private String nombre;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String detalle;
 
     @Column(nullable = false)

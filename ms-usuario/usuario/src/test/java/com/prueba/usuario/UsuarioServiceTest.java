@@ -1,4 +1,4 @@
-package test.java.com.prueba.usuario;
+package com.prueba.Usuario;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -143,3 +143,4 @@ public class UsuarioServiceTest {
         assertTrue(respuesta.isEmpty());
     }
 }
+

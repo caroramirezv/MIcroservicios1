@@ -27,6 +27,10 @@ public class UsuarioServiceTest {
     @Mock
     private UsuarioRepository repository;
 
+    @BeforeEachvoid setUp() { 
+        MockitoAnnotations.openMocks(this); 
+    }
+
     @Test
     public void testSave() {
         Usuario usuario = new Usuario();

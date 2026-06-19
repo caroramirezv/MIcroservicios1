@@ -75,7 +75,7 @@ public class RopaServiceTest {
         assertEquals(ropaId, respuesta.get("id"));
         assertEquals("Camisa de lino", respuesta.get("nombre"));
         assertEquals("Camisa manga larga, color blanco", respuesta.get("detalle"));
-        assertEquals(25000.0, respuesta.get("precio"));
+        assertEquals(25000, respuesta.get("precio"));
         
         verify(repository, times(1)).findById(ropaId);
     }

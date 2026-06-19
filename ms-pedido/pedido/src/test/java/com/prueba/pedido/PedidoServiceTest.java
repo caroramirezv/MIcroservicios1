@@ -1,4 +1,4 @@
-package com.prueba.Pedido;
+package com.prueba.pedido;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 

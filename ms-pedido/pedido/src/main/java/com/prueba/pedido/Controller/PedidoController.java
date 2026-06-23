@@ -27,6 +27,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/pedidos")
 @Tag(name = "Pedidos", description = "Operaciones relacionadas con los pedidos")
+//http://localhost:8082/doc/swagger-ui/index.html
 public class PedidoController {
     @Autowired private PedidoService service;
 

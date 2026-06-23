@@ -1,7 +1,0 @@
-com\prueba\pedido\Service\PedidoService.class
-com\prueba\pedido\PedidoApplication.class
-com\prueba\pedido\Controller\PedidoController.class
-com\prueba\pedido\Repository\PedidoRepository.class
-com\prueba\pedido\Model\Pedido.class
-com\prueba\pedido\Cliente\UsuarioFeignClient.class
-com\prueba\pedido\Model\DTO\UsuarioDTO.class

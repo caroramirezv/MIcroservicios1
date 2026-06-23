@@ -1,120 +1,127 @@
 package com.prueba.categoria;
+
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.prueba.categoria.Model.Categoria;
 import com.prueba.categoria.Repository.CategoriaRepository;
 import com.prueba.categoria.Service.CategoriaService;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+@ExtendWith(MockitoExtension.class)
 public class CategoriaServiceTest {
-@Mock
-    private CategoriaRepository repository;
 
     @InjectMocks
-    private CategoriaService categoriaService; // <-- Asegúrate de que coincida con el nombre de tu clase de servicio
+    private CategoriaService categoriaService;
+
+    @Mock
+    private CategoriaRepository repository;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this); // Inicializa los mocks correctamente
-    }
-    @Test
-    void testSave() {
-        // Arrange
-        Categoria categoriaInput = new Categoria();
-        categoriaInput.setNombre("Ropa");
-        
-        when(repository.save(any(Categoria.class))).thenReturn(categoriaInput);
-
-        // Act
-        Categoria resultado = categoriaService.save(categoriaInput);
-
-        // Assert
-        assertNotNull(resultado);
-        assertEquals("Ropa", resultado.getNombre());
-        verify(repository, times(1)).save(categoriaInput);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testFindAll() {
-        // Arrange
-        Categoria cat1 = new Categoria();
-        Categoria cat2 = new Categoria();
-        List<Categoria> listaSimulada = Arrays.asList(cat1, cat2);
+    public void testSave() {
+        // Given
+        Categoria categoria = new Categoria();
+        categoria.setNombre("Poleras");
+        when(repository.save(categoria)).thenReturn(categoria);
 
-        when(repository.findAll()).thenReturn(listaSimulada);
+        // When
+        Categoria saved = categoriaService.save(categoria);
 
-        // Act
-        List<Categoria> resultado = categoriaService.findAll();
+        // Then
+        assertNotNull(saved);
+        assertEquals("Poleras", saved.getNombre());
+        verify(repository, times(1)).save(categoria);
+    }
 
-        // Assert
-        assertNotNull(resultado);
-        assertEquals(2, resultado.size());
+    @Test
+    public void testFindAll() {
+        // Given
+        Categoria categoria = new Categoria();
+        when(repository.findAll()).thenReturn(List.of(categoria));
+
+        // When
+        List<Categoria> categorias = categoriaService.findAll();
+
+        // Then
+        assertNotNull(categorias);
+        assertEquals(1, categorias.size());
         verify(repository, times(1)).findAll();
     }
 
     @Test
-    void testFindById() {
-        // Arrange
-        Integer idTest = 1;
-        Categoria categoriaMock = new Categoria();
-        categoriaMock.setId(idTest);
+    public void testFindById_Encontrado() {
+        // Given
+        Integer id = 1;
+        Categoria categoria = new Categoria();
+        categoria.setId(id);
+        categoria.setNombre("Pantalones");
+        when(repository.findById(id)).thenReturn(Optional.of(categoria));
 
-        when(repository.findById(idTest)).thenReturn(Optional.of(categoriaMock));
+        // When
+        Optional<Categoria> resultado = categoriaService.findById(id);
 
-        // Act
-        Optional<Categoria> resultado = categoriaService.findById(idTest);
-
-        // Assert
+        // Then
         assertTrue(resultado.isPresent());
-        assertEquals(idTest, resultado.get().getId());
-        verify(repository, times(1)).findById(idTest);
+        assertEquals("Pantalones", resultado.get().getNombre());
+        verify(repository, times(1)).findById(id);
     }
 
     @Test
-    void testUpdate() {
-        // Arrange
-        Integer idTest = 5;
-        Categoria categoriaInput = new Categoria();
-        categoriaInput.setNombre("Electrónica");
+    public void testFindById_NoEncontrado() {
+        // Given
+        Integer id = 99;
+        when(repository.findById(id)).thenReturn(Optional.empty());
 
-        // El método update le setea el ID internamente antes de guardar
-        when(repository.save(any(Categoria.class))).thenAnswer(invocation -> {
-            Categoria c = invocation.getArgument(0);
-            return c; // Retorna el mismo objeto modificado
-        });
+        // When
+        Optional<Categoria> resultado = categoriaService.findById(id);
 
-        // Act
-        Categoria resultado = categoriaService.update(idTest, categoriaInput);
-
-        // Assert
-        assertNotNull(resultado);
-        assertEquals(idTest, resultado.getId()); // Verifica que se le asignó el ID correcto
-        assertEquals("Electrónica", resultado.getNombre());
-        verify(repository, times(1)).save(categoriaInput);
+        // Then
+        assertFalse(resultado.isPresent());
+        verify(repository, times(1)).findById(id);
     }
 
     @Test
-    void testDelete() {
-        // Arrange
-        Integer idTest = 10;
-        
-        // Al ser un método void (deleteById), solo le decimos a Mockito qué hacer (nada)
-        doNothing().when(repository).deleteById(idTest);
+    public void testUpdate() {
+        // Given
+        Integer id = 1;
+        Categoria categoria = new Categoria();
+        categoria.setNombre("Chaquetas");
+        when(repository.save(categoria)).thenReturn(categoria);
 
-        // Act
-        categoriaService.delete(idTest);
+        // When
+        Categoria actualizado = categoriaService.update(id, categoria);
 
-        // Assert
-        verify(repository, times(1)).deleteById(idTest);
+        // Then
+        assertNotNull(actualizado);
+        assertEquals(id, categoria.getId());
+        verify(repository, times(1)).save(categoria);
+    }
+
+    @Test
+    public void testDelete() {
+        // Given
+        Integer id = 1;
+        doNothing().when(repository).deleteById(id);
+
+        // When
+        categoriaService.delete(id);
+
+        // Then
+        verify(repository, times(1)).deleteById(id);
     }
 }

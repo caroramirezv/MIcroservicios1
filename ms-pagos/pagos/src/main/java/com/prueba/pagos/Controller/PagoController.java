@@ -14,15 +14,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.prueba.pagos.Model.Pago;
+import com.prueba.pagos.Service.PagoService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
-import com.prueba.pagos.Model.Pago;
-import com.prueba.pagos.Service.PagoService;
 @RestController 
 @RequestMapping("/api/v1/pagos")
 @Tag ( name = "pagos", description = "sistema de pago")
+//http://localhost:8082/doc/swagger-ui/index.html
 public class PagoController {
     @Autowired private PagoService service;
 

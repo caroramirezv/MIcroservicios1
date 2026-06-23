@@ -1,139 +1,185 @@
 package com.prueba.envio;
+
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.prueba.envio.Client.PedidoFeignClient;
-import com.prueba.envio.Model.Envio;
 import com.prueba.envio.Model.DTO.PedidoDTO;
+import com.prueba.envio.Model.Envio;
 import com.prueba.envio.Repository.EnvioRepository;
 import com.prueba.envio.Service.EnvioService;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+@ExtendWith(MockitoExtension.class)
 public class EnvioServiceTest {
-@Mock
+
+    @InjectMocks
+    private EnvioService envioService;
+
+    @Mock
     private EnvioRepository repository;
 
     @Mock
     private PedidoFeignClient pedidoClient;
 
-    @InjectMocks
-    private EnvioService envioService;
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testSave() {
-        Envio envioInput = new Envio();
-        when(repository.save(any(Envio.class))).thenReturn(envioInput);
+    public void testSave() {
+        // Given
+        Envio envio = new Envio();
+        when(repository.save(envio)).thenReturn(envio);
 
+        // When
+        Envio saved = envioService.save(envio);
 
-        Envio resultado = envioService.save(envioInput);
-
-        assertNotNull(resultado);
-        verify(repository, times(1)).save(envioInput);
+        // Then
+        assertNotNull(saved);
+        verify(repository, times(1)).save(envio);
     }
 
     @Test
-    void testFindAll() {
-        List<Envio> listaSimulada = Arrays.asList(new Envio(), new Envio());
-        when(repository.findAll()).thenReturn(listaSimulada);
+    public void testFindAll() {
+        // Given
+        Envio envio = new Envio();
+        when(repository.findAll()).thenReturn(List.of(envio));
 
-        List<Envio> resultado = envioService.findAll();
+        // When
+        List<Envio> envios = envioService.findAll();
 
-        assertNotNull(resultado);
-        assertEquals(2, resultado.size());
+        // Then
+        assertNotNull(envios);
+        assertEquals(1, envios.size());
         verify(repository, times(1)).findAll();
     }
 
     @Test
-    void testBuscarEnvioCompletoExitoso() {
-        Integer envioId = 1;
-        Integer pedidoId = 500;
+    public void testBuscarEnvioCompleto_Encontrado() {
+        // Given
+        Integer id = 1;
+        Envio envio = new Envio();
+        envio.setId(id);
+        envio.setPedidoId(20);
+        envio.setDireccion("Av. Siempre Viva 123");
+        envio.setEstado("EN_CAMINO");
+        envio.setTrackingCode("TRK-001");
+        envio.setFechaCreacion(new Date());
 
-        Envio envioMock = new Envio();
-        envioMock.setId(envioId);
-        envioMock.setPedidoId(pedidoId);
-        envioMock.setDireccion("Av. Vitacura 1234");
-        envioMock.setEstado("DESPACHADO");
-        envioMock.setTrackingCode("TRK-998877");
-        envioMock.setFechaCreacion(new Date());
+        PedidoDTO pedido = new PedidoDTO();
+        pedido.setId(20);
 
-        PedidoDTO pedidoDTOMock = new PedidoDTO();
+        when(repository.findById(id)).thenReturn(Optional.of(envio));
+        when(pedidoClient.obtenerPedidoPorId(20)).thenReturn(pedido);
 
-        when(repository.findById(envioId)).thenReturn(Optional.of(envioMock));
-        when(pedidoClient.obtenerPedidoPorId(pedidoId)).thenReturn(pedidoDTOMock);
+        // When
+        Map<String, Object> respuesta = envioService.buscarEnvioCompleto(id);
 
-        Map<String, Object> respuesta = envioService.buscarEnvioCompleto(envioId);
-
+        // Then
         assertNotNull(respuesta);
-        assertEquals(envioId, respuesta.get("id"));
-        assertEquals(pedidoId, respuesta.get("pedidoId"));
-        assertEquals("DESPACHADO", respuesta.get("estado"));
-        assertEquals(pedidoDTOMock, respuesta.get("pedido"));
-        verify(pedidoClient, times(1)).obtenerPedidoPorId(pedidoId);
+        assertEquals(id, respuesta.get("id"));
+        assertEquals(20, respuesta.get("pedidoId"));
+        assertEquals("Av. Siempre Viva 123", respuesta.get("direccion"));
+        assertEquals("EN_CAMINO", respuesta.get("estado"));
+        assertEquals(pedido, respuesta.get("pedido"));
+
+        verify(repository, times(1)).findById(id);
+        verify(pedidoClient, times(1)).obtenerPedidoPorId(20);
     }
 
     @Test
-    void testBuscarEnvioCompletoCuandoFeignFalla() {
-        Integer envioId = 1;
-        Integer pedidoId = 500;
+    public void testBuscarEnvioCompleto_PedidoNoDisponible() {
+        // Given
+        Integer id = 1;
+        Envio envio = new Envio();
+        envio.setId(id);
+        envio.setPedidoId(20);
 
-        Envio envioMock = new Envio();
-        envioMock.setId(envioId);
-        envioMock.setPedidoId(pedidoId);
+        when(repository.findById(id)).thenReturn(Optional.of(envio));
+        when(pedidoClient.obtenerPedidoPorId(20)).thenThrow(new RuntimeException("Servicio no disponible"));
 
-        when(repository.findById(envioId)).thenReturn(Optional.of(envioMock));
-        when(pedidoClient.obtenerPedidoPorId(pedidoId)).thenThrow(new RuntimeException("Error de conexión"));
-        Map<String, Object> respuesta = envioService.buscarEnvioCompleto(envioId);
+        // When
+        Map<String, Object> respuesta = envioService.buscarEnvioCompleto(id);
 
+        // Then
+        assertEquals("No disponible", respuesta.get("pedido"));
+        verify(pedidoClient, times(1)).obtenerPedidoPorId(20);
+    }
+
+    @Test
+    public void testBuscarEnvioCompleto_NoExiste() {
+        // Given
+        Integer id = 99;
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        // When
+        Map<String, Object> respuesta = envioService.buscarEnvioCompleto(id);
+
+        // Then
         assertNotNull(respuesta);
-        assertEquals("No disponible", respuesta.get("pedido")); // Verifica que entró al catch con éxito
-        verify(pedidoClient, times(1)).obtenerPedidoPorId(pedidoId);
+        assertTrue(respuesta.isEmpty());
+        verify(repository, times(1)).findById(id);
+        verifyNoInteractions(pedidoClient);
     }
 
     @Test
-    void testDelete() {
-        Integer idTest = 10;
-        doNothing().when(repository).deleteById(idTest);
+    public void testDelete() {
+        // Given
+        Integer id = 1;
+        doNothing().when(repository).deleteById(id);
 
-        envioService.delete(idTest);
+        // When
+        envioService.delete(id);
 
-        verify(repository, times(1)).deleteById(idTest);
+        // Then
+        verify(repository, times(1)).deleteById(id);
     }
 
     @Test
-    void testFiltrarPorEstado() {
+    public void testFiltrarPorEstado() {
+        // Given
+        String estado = "ENTREGADO";
+        Envio envio = new Envio();
+        envio.setEstado(estado);
+        when(repository.findByEstado(estado)).thenReturn(List.of(envio));
 
-        String estadoTest = "ENTREGADO";
-        List<Envio> listaFiltrada = Arrays.asList(new Envio());
-        when(repository.findByEstado(estadoTest)).thenReturn(listaFiltrada);
+        // When
+        List<Envio> resultado = envioService.filtrarPorEstado(estado);
 
-        List<Envio> resultado = envioService.filtrarPorEstado(estadoTest);
-
+        // Then
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
-        verify(repository, times(1)).findByEstado(estadoTest);
+        verify(repository, times(1)).findByEstado(estado);
     }
 
     @Test
-    void testFiltrarPorPedido() {
-        Integer pedidoIdTest = 200;
-        List<Envio> listaFiltrada = Arrays.asList(new Envio());
-        when(repository.findByPedidoId(pedidoIdTest)).thenReturn(listaFiltrada);
+    public void testFiltrarPorPedido() {
+        // Given
+        Integer pedidoId = 20;
+        Envio envio = new Envio();
+        envio.setPedidoId(pedidoId);
+        when(repository.findByPedidoId(pedidoId)).thenReturn(List.of(envio));
 
-        List<Envio> resultado = envioService.filtrarPorPedido(pedidoIdTest);
+        // When
+        List<Envio> resultado = envioService.filtrarPorPedido(pedidoId);
 
+        // Then
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
-        verify(repository, times(1)).findByPedidoId(pedidoIdTest);
+        verify(repository, times(1)).findByPedidoId(pedidoId);
     }
 }

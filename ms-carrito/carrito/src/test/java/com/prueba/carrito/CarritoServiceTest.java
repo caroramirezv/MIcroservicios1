@@ -1,30 +1,36 @@
 package com.prueba.carrito;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.prueba.carrito.Client.RopaFeignClient;
 import com.prueba.carrito.Client.UsuarioFeignClient;
 import com.prueba.carrito.Model.Carrito;
 import com.prueba.carrito.Model.DTO.RopaDTO;
+import com.prueba.carrito.Model.DTO.UsuarioDTO;
 import com.prueba.carrito.Repository.CarritoRepository;
 import com.prueba.carrito.Service.CarritoService;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@ExtendWith(MockitoExtension.class)
 public class CarritoServiceTest {
-@Mock
+
+    @InjectMocks
+    private CarritoService carritoService;
+
+    @Mock
     private CarritoRepository repository;
 
     @Mock
@@ -33,63 +39,142 @@ public class CarritoServiceTest {
     @Mock
     private UsuarioFeignClient usuarioClient;
 
-
-    @InjectMocks
-    private CarritoService carritoService;
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
-
     @Test
-    void testSaveExitosamente() {
+    public void testSave() {
+        // Given
+        Carrito carrito = new Carrito();
+        when(repository.save(carrito)).thenReturn(carrito);
 
-        Carrito carritoEntrada = new Carrito();
-        Carrito carritoGuardado = new Carrito(); 
-        
-        when(repository.save(any(Carrito.class))).thenReturn(carritoGuardado);
+        // When
+        Carrito saved = carritoService.save(carrito);
 
-
-        Carrito resultado = carritoService.save(carritoEntrada);
-
-        assertNotNull(resultado);
-        verify(repository, times(1)).save(carritoEntrada); 
+        // Then
+        assertNotNull(saved);
+        verify(repository, times(1)).save(carrito);
     }
 
     @Test
-    void testBuscarCarritoCompletoExitosamente() {
-        
-        Integer carritoId = 1;
-        
-        Carrito carritoMock = new Carrito();
-        carritoMock.setId(carritoId);
-        carritoMock.setTotal_articulos(2);
-        carritoMock.setTotal(50000.0);
-        carritoMock.setUsuarioId(99);
-        carritoMock.setRopaIds(Arrays.asList(10, 11)); 
+    public void testFindAll() {
+        // Given
+        Carrito carrito = new Carrito();
+        when(repository.findAll()).thenReturn(List.of(carrito));
 
-        
-        when(repository.findById(carritoId)).thenReturn(Optional.of(carritoMock));
+        // When
+        List<Carrito> carritos = carritoService.findAll();
 
-        RopaDTO ropaMock = new RopaDTO(); 
-        when(ropaClient.obtenerRopaPorId(anyInt())).thenReturn(ropaMock);
+        // Then
+        assertNotNull(carritos);
+        assertEquals(1, carritos.size());
+        verify(repository, times(1)).findAll();
+    }
 
+    @Test
+    public void testBuscarCarritoCompleto_Encontrado() {
+        // Given
+        Integer id = 1;
+        Carrito carrito = new Carrito();
+        carrito.setId(id);
+        carrito.setUsuarioId(10);
+        carrito.setTotal_articulos(2);
+        carrito.setTotal(45000.0);
+        carrito.setRopaIds(List.of(5, 6));
 
-   
-        Map<String, Object> respuesta = carritoService.buscarCarritoCompleto(carritoId);
+        RopaDTO ropa1 = new RopaDTO();
+        RopaDTO ropa2 = new RopaDTO();
+        UsuarioDTO usuario = new UsuarioDTO();
 
-       
+        when(repository.findById(id)).thenReturn(Optional.of(carrito));
+        when(ropaClient.obtenerRopaPorId(5)).thenReturn(ropa1);
+        when(ropaClient.obtenerRopaPorId(6)).thenReturn(ropa2);
+        when(usuarioClient.obtenerUsuarioId(10)).thenReturn(usuario);
+
+        // When
+        Map<String, Object> respuesta = carritoService.buscarCarritoCompleto(id);
+
+        // Then
         assertNotNull(respuesta);
-        assertEquals(carritoId, respuesta.get("id"));
-        assertEquals(99, respuesta.get("usuarioId"));
-        
-        
-        List<?> ropasResultado = (List<?>) respuesta.get("ropas");
-        assertEquals(2, ropasResultado.size());
+        assertEquals(id, respuesta.get("id"));
+        assertEquals(2, respuesta.get("total_articulos"));
+        assertEquals(45000.0, respuesta.get("total"));
+        assertEquals(usuario, respuesta.get("usuario"));
 
-        
-        verify(ropaClient, times(2)).obtenerRopaPorId(anyInt());
-        verify(usuarioClient, times(1)).obtenerUsuarioId(99);
+        @SuppressWarnings("unchecked")
+        List<RopaDTO> ropas = (List<RopaDTO>) respuesta.get("ropas");
+        assertEquals(2, ropas.size());
+
+        verify(repository, times(1)).findById(id);
+        verify(ropaClient, times(1)).obtenerRopaPorId(5);
+        verify(ropaClient, times(1)).obtenerRopaPorId(6);
+    }
+
+    @Test
+    public void testBuscarCarritoCompleto_NoExiste() {
+        // Given
+        Integer id = 99;
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        // When
+        Map<String, Object> respuesta = carritoService.buscarCarritoCompleto(id);
+
+        // Then
+        assertNotNull(respuesta);
+        assertTrue(respuesta.isEmpty());
+        verify(repository, times(1)).findById(id);
+        verify(ropaClient, never()).obtenerRopaPorId(any());
+    }
+
+    @Test
+    public void testBuscarCarritoCompleto_UsuarioNoDisponible() {
+        // Given
+        Integer id = 1;
+        Carrito carrito = new Carrito();
+        carrito.setId(id);
+        carrito.setUsuarioId(10);
+        carrito.setRopaIds(List.of());
+
+        when(repository.findById(id)).thenReturn(Optional.of(carrito));
+        when(usuarioClient.obtenerUsuarioId(10)).thenThrow(new RuntimeException("Servicio no disponible"));
+
+        // When
+        Map<String, Object> respuesta = carritoService.buscarCarritoCompleto(id);
+
+        // Then
+        assertEquals("No disponible", respuesta.get("usuario"));
+        verify(usuarioClient, times(1)).obtenerUsuarioId(10);
+    }
+
+    @Test
+    public void testDelete() {
+        // Given
+        Integer id = 1;
+        doNothing().when(repository).deleteById(id);
+
+        // When
+        carritoService.delete(id);
+
+        // Then
+        verify(repository, times(1)).deleteById(id);
+    }
+
+    @Test
+    public void testFindByUsuarioId() {
+        // Given
+        Integer usuarioId = 10;
+        Carrito carrito = new Carrito();
+        carrito.setUsuarioId(usuarioId);
+        when(repository.findByUsuarioId(usuarioId)).thenReturn(List.of(carrito));
+
+        // When
+        List<Carrito> resultado = carritoService.findByUsuarioId(usuarioId);
+
+        // Then
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(repository, times(1)).findByUsuarioId(usuarioId);
     }
 }

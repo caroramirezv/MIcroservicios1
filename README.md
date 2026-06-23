@@ -1,4 +1,4 @@
-# 🛍️ Tienda de Ropa — Arquitectura de Microservicios
+# Tienda de Ropa — Arquitectura de Microservicios
 
 ## 📋 Descripción del contexto / dominio del proyecto
 
@@ -8,7 +8,7 @@ El sistema cubre el flujo completo de una tienda: un usuario se registra, navega
 
 ---
 
-## 👥 Integrantes
+##Integrantes
 
 | Nombre |
 |---|

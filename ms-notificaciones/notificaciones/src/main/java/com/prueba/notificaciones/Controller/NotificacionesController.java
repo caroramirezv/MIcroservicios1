@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/notificaciones")
 @Tag(name= "Notificaciones", description = "Operaciones relacionadas con las Notificaciones")
+//http://localhost:8082/doc/swagger-ui/index.html
 public class NotificacionesController {
  @Autowired
     private NotificacionesService service;

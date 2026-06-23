@@ -1,6 +1,6 @@
 # Tienda de Ropa — Arquitectura de Microservicios
 
-## 📋 Descripción del contexto / dominio del proyecto
+## Descripción del contexto / dominio del proyecto
 
 Este proyecto implementa el backend de una **tienda de ropa online** mediante una arquitectura de **microservicios independientes** construidos con Spring Boot. Cada microservicio gestiona una entidad o proceso del negocio (usuarios, catálogo de ropa, categorías, carrito, pedidos, pagos, inventario, envíos, búsqueda y notificaciones), con su propia base de datos MySQL y comunicación entre servicios mediante **Feign Client**. Todos los microservicios se registran en un servidor **Eureka** para descubrimiento de servicios.
 
@@ -8,7 +8,7 @@ El sistema cubre el flujo completo de una tienda: un usuario se registra, navega
 
 ---
 
-##Integrantes
+## Integrantes
 
 | Nombre |
 |---|
@@ -17,7 +17,7 @@ El sistema cubre el flujo completo de una tienda: un usuario se registra, navega
 
 ---
 
-## 🧩 Microservicios Implementados
+## Microservicios Implementados
 
 | # | Microservicio | Puerto | Base de datos |
 |---|---|---|---|
@@ -32,7 +32,9 @@ El sistema cubre el flujo completo de una tienda: un usuario se registra, navega
 | 9 | **ms-inventario** | 8089 | db_inventario |
 | 10 | **ms-envio** | 8090 | db_envio |
 
-Adicionalmente, el proyecto incluye un servidor **Eureka** (puerto `8182`) donde los 10 microservicios se registran como clientes de descubrimiento.
+Adicionalmente, el proyecto incluye:
+- Un servidor **Eureka** (puerto `8182`) donde los 10 microservicios se registran como clientes de descubrimiento.
+- Un **API Gateway** (puerto `8080`) que centraliza el acceso a todos los microservicios (ver sección siguiente).
 
 ### Resumen de funcionalidades por microservicio
 
@@ -49,13 +51,28 @@ Adicionalmente, el proyecto incluye un servidor **Eureka** (puerto `8182`) donde
 
 ---
 
-## 🌐 Rutas principales del Gateway
+## Rutas principales del Gateway
 
-> ⚠️ **Estado actual: el módulo de API Gateway aún no está implementado en este proyecto.** Por ahora, cada microservicio se consume directamente en su propio puerto (ver tabla de la sección anterior). Cuando se incorpore un Spring Cloud Gateway, esta sección se actualizará con el prefijo de cada ruta enrutada (por ejemplo `http://localhost:8080/usuario/**` → `ms-usuario`, `http://localhost:8080/ropa/**` → `ms-ropa`, etc.).
+El **API Gateway** (Spring Cloud Gateway) corre en el puerto `8080` y centraliza el acceso a los 10 microservicios. Se registra en Eureka y enruta cada solicitud usando el nombre de servicio (`lb://`), por lo que no depende de un puerto fijo de cada microservicio.
 
-Mientras tanto, las rutas base de cada microservicio son:
+| Ruta del Gateway | Redirige a | Microservicio |
+|---|---|---|
+| `http://localhost:8080/usuario/**` | `/api/v1/usuario/**` | ms-usuario |
+| `http://localhost:8080/ropa/**` | `/api/v1/ropa/**` | ms-ropa |
+| `http://localhost:8080/pedidos/**` | `/api/v1/pedidos/**` | ms-pedido |
+| `http://localhost:8080/pagos/**` | `/api/v1/pagos/**` | ms-pagos |
+| `http://localhost:8080/notificaciones/**` | `/api/v1/notificaciones/**` | ms-notificaciones |
+| `http://localhost:8080/categoria/**` | `/api/v1/categoria/**` | ms-categoria |
+| `http://localhost:8080/carrito/**` | `/api/v1/carrito/**` | ms-carrito |
+| `http://localhost:8080/busqueda/**` | `/api/v1/busqueda/**` | ms-busqueda |
+| `http://localhost:8080/inventario/**` | `/api/v1/inventario/**` | ms-inventario |
+| `http://localhost:8080/envio/**` | `/api/v1/envio/**` | ms-envio |
 
-| Microservicio | Ruta base |
+Por ejemplo, `GET http://localhost:8080/usuario/1` se redirige internamente a `GET http://localhost:8081/api/v1/usuario/1`.
+
+> Las rutas directas por puerto (sin pasar por el Gateway) siguen disponibles para pruebas locales:
+
+| Microservicio | Ruta base directa |
 |---|---|
 | ms-usuario | `http://localhost:8081/api/v1/usuario` |
 | ms-ropa | `http://localhost:8082/api/v1/ropa` |
@@ -70,7 +87,7 @@ Mientras tanto, las rutas base de cada microservicio son:
 
 ---
 
-## 📖 Documentación Swagger
+## Documentación Swagger
 
 Cada microservicio expone su propia documentación interactiva vía **Swagger / OpenAPI** en la siguiente ruta, una vez que el servicio está corriendo localmente:
 
@@ -87,11 +104,11 @@ Cada microservicio expone su propia documentación interactiva vía **Swagger / 
 | ms-inventario | http://localhost:8089/doc/swagger-ui.html |
 | ms-envio | http://localhost:8090/doc/swagger-ui.html |
 
-> 🌍 **Documentación remota**: actualmente el proyecto no está desplegado en un entorno remoto (Railway, Render, etc.). Esta sección se completará con los enlaces correspondientes una vez realizado el despliegue.
+> **Documentación remota**: actualmente el proyecto no está desplegado en un entorno remoto (Railway, Render, etc.). Esta sección se completará con los enlaces correspondientes una vez realizado el despliegue.
 
 ---
 
-## 🚀 Instrucciones de ejecución
+## Instrucciones de ejecución
 
 ### Ejecución local
 
@@ -133,17 +150,24 @@ Cada microservicio expone su propia documentación interactiva vía **Swagger / 
    ```
    O bien, abrir cada carpeta como proyecto en IntelliJ IDEA y ejecutar la clase `*Application.java`.
 
-6. **Verificar el registro en Eureka**: en `http://localhost:8182` deberían aparecer los 10 microservicios como instancias activas (`UP`).
+6. **Levantar el API Gateway al final**, una vez que todos los microservicios estén registrados en Eureka:
+   ```
+   cd gateway/gateway
+   ./mvnw spring-boot:run
+   ```
+   El Gateway queda disponible en `http://localhost:8080` y enruta hacia cada microservicio según la tabla de la sección anterior.
 
-7. **Probar los endpoints** desde Postman o el navegador usando las rutas base indicadas más arriba, o explorar cada API desde su Swagger UI.
+7. **Verificar el registro en Eureka**: en `http://localhost:8182` deberían aparecer los 10 microservicios y el gateway como instancias activas (`UP`).
+
+8. **Probar los endpoints** desde Postman o el navegador, ya sea a través del Gateway (`http://localhost:8080/usuario/...`) o directo a cada microservicio, o explorar cada API desde su Swagger UI.
 
 ### Ejecución remota
 
-> 🌍 Actualmente el proyecto no cuenta con un despliegue remoto activo (Docker, Railway, Render u otra plataforma). Esta sección se completará con las instrucciones de despliegue y las URLs públicas una vez configurado el entorno remoto.
+> Actualmente el proyecto no cuenta con un despliegue remoto activo (Docker, Railway, Render u otra plataforma). Esta sección se completará con las instrucciones de despliegue y las URLs públicas una vez configurado el entorno remoto.
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
+## Tecnologías Utilizadas
 
 - **Java 21**
 - **Spring Boot 3.5.15**
@@ -155,4 +179,3 @@ Cada microservicio expone su propia documentación interactiva vía **Swagger / 
 - **JUnit 5 + Mockito** (pruebas unitarias)
 - **Lombok**
 - **Maven**
-└── ms-envio/

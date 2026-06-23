@@ -1,0 +1,99 @@
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+      routes:
+
+
+        - id: usuario
+          uri: lb://usuario
+          predicates:
+            - Path=/usuario/**
+          filters:
+            - RewritePath=/usuario/?(?<segment>.*), /api/v1/usuario/$\{segment}
+
+
+        - id: ropa
+          uri: lb://ropa
+          predicates:
+            - Path=/ropa/**
+          filters:
+            - RewritePath=/ropa/?(?<segment>.*), /api/v1/ropa/$\{segment}
+
+
+        - id: pedido
+          uri: lb://pedido
+          predicates:
+            - Path=/pedidos/**
+          filters:
+            - RewritePath=/pedidos/?(?<segment>.*), /api/v1/pedidos/$\{segment}
+
+
+        - id: pagos
+          uri: lb://pagos
+          predicates:
+            - Path=/pagos/**
+          filters:
+            - RewritePath=/pagos/?(?<segment>.*), /api/v1/pagos/$\{segment}
+
+
+        - id: notificaciones
+          uri: lb://notificaciones
+          predicates:
+            - Path=/notificaciones/**
+          filters:
+            - RewritePath=/notificaciones/?(?<segment>.*), /api/v1/notificaciones/$\{segment}
+
+
+        - id: categoria
+          uri: lb://categoria
+          predicates:
+            - Path=/categoria/**
+          filters:
+            - RewritePath=/categoria/?(?<segment>.*), /api/v1/categoria/$\{segment}
+
+
+        - id: carrito
+          uri: lb://carrito
+          predicates:
+            - Path=/carrito/**
+          filters:
+            - RewritePath=/carrito/?(?<segment>.*), /api/v1/carrito/$\{segment}
+
+
+        - id: busqueda
+          uri: lb://busqueda
+          predicates:
+            - Path=/busqueda/**
+          filters:
+            - RewritePath=/busqueda/?(?<segment>.*), /api/v1/busqueda/$\{segment}
+
+
+        - id: inventario
+          uri: lb://inventario
+          predicates:
+            - Path=/inventario/**
+          filters:
+            - RewritePath=/inventario/?(?<segment>.*), /api/v1/inventario/$\{segment}
+
+
+        - id: envio
+          uri: lb://envio
+          predicates:
+            - Path=/envio/**
+          filters:
+            - RewritePath=/envio/?(?<segment>.*), /api/v1/envio/$\{segment}
+
+server:
+  port: 8080
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8182/eureka/

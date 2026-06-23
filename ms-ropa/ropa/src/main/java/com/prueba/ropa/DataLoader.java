@@ -9,7 +9,7 @@ import com.prueba.ropa.Repository.RopaRepository;
 
 import net.datafaker.Faker;
 
-@Profile("dev")
+@Profile({"dev","test"})
 @Component
 public class DataLoader implements CommandLineRunner {
 

@@ -27,7 +27,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/pedidos")
 @Tag(name = "Pedidos", description = "Operaciones relacionadas con los pedidos")
-//http://localhost:8082/doc/swagger-ui/index.html
 public class PedidoController {
     @Autowired private PedidoService service;
 
@@ -47,7 +46,7 @@ public class PedidoController {
     }
 
     @PatchMapping("/{id}/estado")//http://localhost:8083/api/v1/pedidos/1?Estado
-    @Operation (summary = "Eliminar un pedido", description = "Cambia el estado de un pedido")
+    @Operation (summary = "Cambiar el estado de un pedido", description = "Cambia el estado de un pedido")
     @ApiResponse(
         responseCode = "200", 
         description = "Estado del pedido actualizado correctamente",

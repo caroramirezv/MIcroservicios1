@@ -30,7 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/ropa")
+@RequestMapping("/api/v2/ropa")
 @Tag(name = "Ropas", description = "Gestionar la ropa ingresada")
 
 public class RopaControllerV2 {

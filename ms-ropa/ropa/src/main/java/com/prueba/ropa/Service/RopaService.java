@@ -34,6 +34,10 @@ public class RopaService {
     return respuesta;
 }
 
+    public Ropa findById(Integer id) {
+    return repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Ropa con ID " + id + " no encontrada"));
+}
 
     public void delete(Integer id) {
         repository.deleteById(id);

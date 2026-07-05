@@ -1,19 +1,22 @@
 package com.prueba.ropa.Assemblers;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import org.springframework.stereotype.Component;
 
 import com.prueba.ropa.Controller.RopaControllerV2;
 import com.prueba.ropa.Model.Ropa;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.server.RepresentationModelAssembler;
-import org.springframework.stereotype.Component;
 
 @Component
-public class RopaModelAssembler implements RepresentationModelAssembler <Ropa, EntityModel<Ropa>> {
+public class RopaModelAssembler implements RepresentationModelAssembler<Ropa, EntityModel<Ropa>> {
 
-	@Override
-	public EntityModel<Ropa> toModel(Ropa ropa) {
-		return EntityModel.of(ropa,
-				linkTo(methodOn(RopaControllerV2.class).obtenerCompleto(ropa.getId())).withSelfRel(),
-				linkTo(methodOn(RopaControllerV2.class).listar()).withRel("ropa"));
-	}
+    @Override
+    public EntityModel<Ropa> toModel(Ropa ropa) {
+        return EntityModel.of(ropa,
+                linkTo(methodOn(RopaControllerV2.class).getRopaById(ropa.getId())).withSelfRel(),
+                // Cambiamos listar por getAllRopas
+                linkTo(methodOn(RopaControllerV2.class).getAllRopas()).withRel("ropas"));
+    }
 }

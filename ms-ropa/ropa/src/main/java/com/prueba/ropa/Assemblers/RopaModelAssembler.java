@@ -16,7 +16,6 @@ public class RopaModelAssembler implements RepresentationModelAssembler<Ropa, En
     public EntityModel<Ropa> toModel(Ropa ropa) {
         return EntityModel.of(ropa,
                 linkTo(methodOn(RopaControllerV2.class).getRopaById(ropa.getId())).withSelfRel(),
-                // Cambiamos listar por getAllRopas
                 linkTo(methodOn(RopaControllerV2.class).getAllRopas()).withRel("ropas"));
     }
 }

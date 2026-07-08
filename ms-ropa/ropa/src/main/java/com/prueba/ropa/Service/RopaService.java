@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.prueba.ropa.Model.Ropa;
 import com.prueba.ropa.Repository.RopaRepository;
@@ -34,9 +36,9 @@ public class RopaService {
     return respuesta;
 }
 
-    public Ropa findById(Integer id) {
+public Ropa findById(Integer id) {
     return repository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Ropa con ID " + id + " no encontrada"));
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ropa con ID " + id + " no encontrada"));
 }
 
     public void delete(Integer id) {

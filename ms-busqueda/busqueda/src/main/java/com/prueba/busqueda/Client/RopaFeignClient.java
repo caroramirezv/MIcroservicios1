@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.prueba.busqueda.Model.DTO.RopaDTO;
 
-@FeignClient(name = "ms-ropa", url = "localhost:8082") 
+@FeignClient(name = "ms-ropa") 
 public interface RopaFeignClient {
     @GetMapping("/api/v1/ropa/{id}") 
     RopaDTO obtenerRopaPorId(@PathVariable("id") Integer id);
